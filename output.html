@@ -1,0 +1,81 @@
+<iframe srcdoc="<!DOCTYPE html>
+<html>
+  <head>
+    <title>Carto</title>
+    <meta name='viewport' content='initial-scale=1.0, user-scalable=no' />
+    <meta http-equiv='content-type' content='text/html; charset=UTF-8' />
+    <link rel='shortcut icon' href='http://cartodb.com/assets/favicon.ico' />
+
+    <style>
+     html, body, #map {
+       height: 100%;
+       padding: 0;
+       margin: 0;
+     }
+     #zoom-center {
+       position: absolute;
+       right: 0;
+       top: 0;
+       background-color: rgba(255, 255, 255, 0.7);
+       width: 240px;
+       z-index: 100;
+       padding: 4px;
+     }
+    </style>
+
+    <link rel='stylesheet' href='https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.15/themes/css/cartodb.css' />
+  </head>
+  <body>
+    <div id='zoom-center'>
+      zoom=<span id='zoom'>4</span>,
+      lng=<span id='lon'>No data</span>, lat=<span id='lat'>No data</span>
+    </div>
+    <div id='map'></div>
+    <script src='https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.15/cartodb.js'></script>
+
+    <script>
+     const config  = {&quot;user_name&quot;: &quot;maptastik&quot;, &quot;maps_api_template&quot;: &quot;https://maptastik.carto.com&quot;, &quot;sql_api_template&quot;: &quot;https://maptastik.carto.com&quot;, &quot;tiler_protocol&quot;: &quot;https&quot;, &quot;tiler_domain&quot;: &quot;carto.com&quot;, &quot;tiler_port&quot;: &quot;80&quot;, &quot;type&quot;: &quot;namedmap&quot;, &quot;named_map&quot;: {&quot;name&quot;: &quot;cartoframes_ver20170406_layers2_time0_baseid1_labels0_zoom0&quot;, &quot;params&quot;: {&quot;basemap_url&quot;: &quot;https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png&quot;, &quot;cartocss_0&quot;: &quot;#layer[&#92;'mapnik::geometry_type&#92;'=1] {  marker-width: 10; marker-fill: #5D69B1; marker-fill-opacity: 1; marker-allow-overlap: true; marker-line-width: 0.5; marker-line-color: #000; marker-line-opacity: 1;} #layer[&#92;'mapnik::geometry_type&#92;'=2] {  line-width: 1.5; line-color: #5D69B1;} #layer[&#92;'mapnik::geometry_type&#92;'=3] {  polygon-fill: #5D69B1; polygon-opacity: 0.9; polygon-gamma: 0.5; line-color: #FFF; line-width: 0.5; line-opacity: 0.25; line-comp-op: hard-light;} &quot;, &quot;sql_0&quot;: &quot;SELECT * FROM prcr_parks&quot;, &quot;cartocss_1&quot;: &quot;#layer[&#92;'mapnik::geometry_type&#92;'=1] {  marker-width: 6; marker-fill: ramp([category], cartocolor(Prism), category(10)); marker-fill-opacity: 1; marker-allow-overlap: true; marker-line-width: 0.5; marker-line-color: #000; marker-line-opacity: 1;} #layer[&#92;'mapnik::geometry_type&#92;'=2] {  line-width: 1.5; line-color: ramp([category], cartocolor(Prism), category(10));} #layer[&#92;'mapnik::geometry_type&#92;'=3] {  polygon-fill: ramp([category], cartocolor(Prism), category(10)); polygon-opacity: 0.9; polygon-gamma: 0.5; line-color: #FFF; line-width: 0.5; line-opacity: 0.25; line-comp-op: hard-light;} &quot;, &quot;sql_1&quot;: &quot;SELECT * FROM prcr_asset_inventory&quot;, &quot;west&quot;: -78.8080153477223, &quot;south&quot;: 35.667399124826, &quot;east&quot;: -78.4775477051061, &quot;north&quot;: 36.0600801999031}}};
+     const bounds  = [[36.0600801999031, -78.4775477051061], [35.667399124826, -78.8080153477223]];
+     const options = {&quot;filter&quot;: [&quot;mapnik&quot;, &quot;torque&quot;], &quot;https&quot;: true};
+
+     const adjustLongitude = (lng) => (
+       lng - ((Math.ceil((lng + 180) / 360) - 1) * 360)
+     );
+     const map = L.map('map', {
+       zoom: 3,
+       center: [0, 0],
+     });
+
+     if (L.Browser.retina) {
+         var basemap = config.named_map.params.basemap_url.replace('.png', '@2x.png');
+     } else {
+         var basemap = config.named_map.params.basemap_url;
+     }
+     L.tileLayer(basemap, {
+         attribution: &quot;&copy; <a href=\&quot;http://www.openstreetmap.org/copyright\&quot;>OpenStreetMap</a>&quot;
+     }).addTo(map);
+     const updateMapInfo = () => {
+       $('#zoom').text(map.getZoom());
+       $('#lat').text(map.getCenter().lat.toFixed(4));
+       $('#lon').text(adjustLongitude(map.getCenter().lng).toFixed(4));
+     };
+
+     cartodb.createLayer(map, config, options)
+            .addTo(map)
+            .done((layer) => {
+              if (bounds.length) {
+                map.fitBounds(bounds);
+              }
+              updateMapInfo();
+              map.on('move', () => {
+                updateMapInfo();
+              });
+            })
+            .error((err) => {
+              console.log('ERROR: ', err);
+            });
+    </script>
+
+  </body>
+</html>
+" width=800 height=400>  Preview image: <img src="https://maptastik.carto.com/api/v1/map/static/named/cartoframes_ver20170406_layers2_time0_baseid1_labels0_zoom0/800/400.png?config=%7B%22basemap_url%22%3A+%22https%3A%2F%2Fcartodb-basemaps-%7Bs%7D.global.ssl.fastly.net%2Fdark_all%2F%7Bz%7D%2F%7Bx%7D%2F%7By%7D.png%22%2C+%22cartocss_0%22%3A+%22%23layer%5B%27mapnik%3A%3Ageometry_type%27%3D1%5D+%7B++marker-width%3A+10%3B+marker-fill%3A+%235D69B1%3B+marker-fill-opacity%3A+1%3B+marker-allow-overlap%3A+true%3B+marker-line-width%3A+0.5%3B+marker-line-color%3A+%23000%3B+marker-line-opacity%3A+1%3B%7D+%23layer%5B%27mapnik%3A%3Ageometry_type%27%3D2%5D+%7B++line-width%3A+1.5%3B+line-color%3A+%235D69B1%3B%7D+%23layer%5B%27mapnik%3A%3Ageometry_type%27%3D3%5D+%7B++polygon-fill%3A+%235D69B1%3B+polygon-opacity%3A+0.9%3B+polygon-gamma%3A+0.5%3B+line-color%3A+%23FFF%3B+line-width%3A+0.5%3B+line-opacity%3A+0.25%3B+line-comp-op%3A+hard-light%3B%7D+%22%2C+%22sql_0%22%3A+%22SELECT+%2A+FROM+prcr_parks%22%2C+%22cartocss_1%22%3A+%22%23layer%5B%27mapnik%3A%3Ageometry_type%27%3D1%5D+%7B++marker-width%3A+6%3B+marker-fill%3A+ramp%28%5Bcategory%5D%2C+cartocolor%28Prism%29%2C+category%2810%29%29%3B+marker-fill-opacity%3A+1%3B+marker-allow-overlap%3A+true%3B+marker-line-width%3A+0.5%3B+marker-line-color%3A+%23000%3B+marker-line-opacity%3A+1%3B%7D+%23layer%5B%27mapnik%3A%3Ageometry_type%27%3D2%5D+%7B++line-width%3A+1.5%3B+line-color%3A+ramp%28%5Bcategory%5D%2C+cartocolor%28Prism%29%2C+category%2810%29%29%3B%7D+%23layer%5B%27mapnik%3A%3Ageometry_type%27%3D3%5D+%7B++polygon-fill%3A+ramp%28%5Bcategory%5D%2C+cartocolor%28Prism%29%2C+category%2810%29%29%3B+polygon-opacity%3A+0.9%3B+polygon-gamma%3A+0.5%3B+line-color%3A+%23FFF%3B+line-width%3A+0.5%3B+line-opacity%3A+0.25%3B+line-comp-op%3A+hard-light%3B%7D+%22%2C+%22sql_1%22%3A+%22SELECT+%2A+FROM+prcr_asset_inventory%22%7D&anti_cache=0.8783477961393581&bbox=-78.8080153477223%2C35.667399124826%2C-78.4775477051061%2C36.0600801999031" /></iframe>
